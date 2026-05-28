@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+# Usage: kiosk-scale 1.0 | 1.05 | 0.95 | ...
+SCALE="${1:-1.00}"
+OUTPUTS="HDMI-0 HDMI-1 HDMI2 HDMI1"
+OUT=""
+for o in $OUTPUTS; do
+  if xrandr | grep -q "^$o connected"; then
+    OUT="$o"
+    break
+  fi
+done
+if [ -z "$OUT" ]; then
+  notify-send "kiosk-scale: no HDMI display found" 2>/dev/null || echo "ERROR: No HDMI display found"
+  exit 1
+fi
+xrandr --output "$OUT" --scale "${SCALE}x${SCALE}"
+CUR="$HOME/.config/kiosk-scale"
+echo "$SCALE" > "$CUR"
+echo "Display $OUT scaled to ${SCALE}x"
